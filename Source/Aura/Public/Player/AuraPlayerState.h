@@ -19,6 +19,7 @@ class AURA_API AAuraPlayerState : public APlayerState, public IAbilitySystemInte
 	public:
 	AAuraPlayerState();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	UAttributeSet* GetAttributeSet()const;
 	protected:
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
