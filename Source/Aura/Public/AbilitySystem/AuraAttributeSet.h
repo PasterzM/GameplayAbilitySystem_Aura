@@ -4,11 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
+#include "AuraAbilitySystemComponent.h"	//potrzebne do uzycia ATTRIBUTE_ACCESSORS
+#include "AbilitySystemComponent.h"
 #include "AuraAttributeSet.generated.h"
 
-/**
- *
- */
+#define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
+GAMEPLAYATTRIBUTE_PROPERTY_GETTER(ClassName, PropertyName) \
+GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
+GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
+GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
+
 UCLASS()
 class AURA_API UAuraAttributeSet: public UAttributeSet{
 	GENERATED_BODY()
@@ -16,17 +21,21 @@ class AURA_API UAuraAttributeSet: public UAttributeSet{
 	UAuraAttributeSet();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Health, Category = "Vital Attributes")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Vital Attributes")
 	FGameplayAttributeData Health;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Health);	//getter/setter dla pola, szybkie tworzenie
 
-	UPROPERTY(ReplicatedUsing = OnRep_MaxHealth, Category = "Vital Attributes")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Vital Attributes")
 	FGameplayAttributeData MaxHealth;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxHealth);
 
-	UPROPERTY(ReplicatedUsing = OnRep_Mana, Category = "Vital Attributes")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Mana, Category = "Vital Attributes")
 	FGameplayAttributeData Mana;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
 
-	UPROPERTY(ReplicatedUsing = OnRep_MaxMana, Category = "Vital Attributes")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxMana, Category = "Vital Attributes")
 	FGameplayAttributeData MaxMana;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana);
 
 	//funkcja uruchamiana kiedy serwer odpowiada na zmiane wartosci atrybutu, ustawiona w ReplicatedUsing
 	UFUNCTION()

@@ -2,10 +2,16 @@
 
 
 #include "AbilitySystem/AuraAttributeSet.h"
-#include "AbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 
 UAuraAttributeSet::UAuraAttributeSet(){
+	UE_LOG(LogTemp, Warning, TEXT("UAuraAttributeSet::UAuraAttributeSet"));
+
+	//metoda stworzona przez makro ATTRIBUTE_ACCESSORS
+	InitHealth(100.f);	
+	InitMaxHealth(100.f);
+	InitMaxHealth(50.f);
+	InitMaxHealth(50.f);
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const{

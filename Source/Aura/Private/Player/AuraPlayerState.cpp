@@ -6,7 +6,13 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 
+void AAuraPlayerState::BeginPlay(){
+	UE_LOG(LogTemp, Warning, TEXT("AAuraPlayerState::BeginPlay"));
+}
+
 AAuraPlayerState::AAuraPlayerState(){
+	UE_LOG(LogTemp, Warning, TEXT("AAuraPlayerState::AAuraPlayerState"));
+
 	NetUpdateFrequency = 100.f; //jak czesto serwer bedzie probowac updatowac klientów
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAuraAbilitySystemComponent>("AbilitySystemComponent");

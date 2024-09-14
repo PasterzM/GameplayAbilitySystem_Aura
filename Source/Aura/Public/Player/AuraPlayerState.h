@@ -17,6 +17,7 @@ class AURA_API AAuraPlayerState : public APlayerState, public IAbilitySystemInte
 {
 	GENERATED_BODY()
 	public:
+	virtual void BeginPlay() override;
 	AAuraPlayerState();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet()const;
