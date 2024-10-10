@@ -23,8 +23,9 @@ void AAuraPlayerController::BeginPlay(){
 
 	//GetSubsystem -> subsystemy s¹ singletonami
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(Subsystem);
-	Subsystem->AddMappingContext(AuraContext, 0);
+	if(Subsystem){
+		Subsystem->AddMappingContext(AuraContext, 0);
+	}
 
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
@@ -68,21 +69,21 @@ void AAuraPlayerController::CursorTrace(){
 	LastActor = ThisActor;
 	ThisActor = CursorHit.GetActor();
 
-	if(LastActor == nullptr){ 
-		if(ThisActor != nullptr){ 
+	if(LastActor == nullptr){
+		if(ThisActor != nullptr){
 			ThisActor->HighlightActor();
-		}else{
-		
+		} else{
+
 		}
-	}else{
-		if(ThisActor == nullptr){ 
+	} else{
+		if(ThisActor == nullptr){
 			LastActor->UnHighlightActor();
-		}else{
+		} else{
 			if(ThisActor != LastActor){
 				LastActor->UnHighlightActor();
 				ThisActor->HighlightActor();
-			}else{
-			
+			} else{
+
 			}
 		}
 	}
