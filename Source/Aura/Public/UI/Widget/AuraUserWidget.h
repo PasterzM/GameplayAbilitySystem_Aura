@@ -20,7 +20,7 @@ class AURA_API UAuraUserWidget: public UUserWidget{
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UObject> WidgetController;
 	
-	//protected:
-	//UFUNCTION(BlueprintImplementableEvent)
-	//void WidgetControllerSet();
+	protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void WidgetControllerSet();
 };
