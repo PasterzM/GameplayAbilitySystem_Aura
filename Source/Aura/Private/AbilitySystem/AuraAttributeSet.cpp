@@ -8,10 +8,10 @@ UAuraAttributeSet::UAuraAttributeSet(){
 	UE_LOG(LogTemp, Warning, TEXT("UAuraAttributeSet::UAuraAttributeSet"));
 
 	//metoda stworzona przez makro ATTRIBUTE_ACCESSORS
-	InitHealth(100.f);	
+	InitHealth(50.f);	
 	InitMaxHealth(100.f);
-	InitMaxHealth(50.f);
-	InitMaxHealth(50.f);
+	InitMana(50.f);
+	InitMaxMana(50.f);
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const{
