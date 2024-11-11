@@ -30,7 +30,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies(){
 
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
 		[](const FGameplayTagContainer& AssetTags){
-		;
+		//MessageWidgetDataTable
 		}
 	);
 }
