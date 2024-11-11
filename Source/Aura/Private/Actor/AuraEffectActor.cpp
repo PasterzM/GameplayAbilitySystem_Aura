@@ -19,7 +19,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 	check(GameplayEffectClass);
 	FGameplayEffectContextHandle EffectContextHandle = TargetASC->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(this);
-	const FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(GameplayEffectClass, 1.f, EffectContextHandle);
+	const FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(GameplayEffectClass, ActorLevel, EffectContextHandle);
 	const FActiveGameplayEffectHandle AcctiveEffectHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 
 	const bool iIsInfinite = EffectSpecHandle.Data.Get()->Def.Get()->DurationPolicy == EGameplayEffectDurationType::Infinite;
@@ -61,11 +61,11 @@ void AAuraEffectActor::OnEndOverlap(AActor* targetActor){
 		TArray<FActiveGameplayEffectHandle> toRemove;
 		for(auto handlePair : ActiveEffectHandles){
 			if(handlePair.Value == TargetASC){
-				TargetASC->RemoveActiveGameplayEffect(handlePair.Key,1);
+				TargetASC->RemoveActiveGameplayEffect(handlePair.Key, 1);
 				toRemove.Add(handlePair.Key);
 			}
 		}
-		for(auto &key : toRemove){
+		for(auto& key : toRemove){
 			ActiveEffectHandles.FindAndRemoveChecked(key);
 		}
 	}
