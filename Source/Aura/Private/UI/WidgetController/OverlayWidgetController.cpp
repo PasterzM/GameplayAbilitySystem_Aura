@@ -31,9 +31,16 @@ void UOverlayWidgetController::BindCallbacksToDependencies(){
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
 		[this](const FGameplayTagContainer& AssetTags){
 		for(const auto Tag : AssetTags){
-			const auto Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
-			GEngine->AddOnScreenDebugMessage(-1,8.f,FColor::Blue,Msg);
-			auto *Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable,Tag);
+			auto MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
+			//for example, say Tag = Message.HealthPotion
+			//Message.HealthPotion".MatchesTag("Message") will return True, "MEssage".MatchesTag("Message.HealthPotion") will return False
+			if(Tag.MatchesTag(MessageTag)){
+				//const auto Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
+				//GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
+				const auto* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable, Tag);
+				if(Row)
+					MessageWidgetRowDelegate.Broadcast(*Row);
+			}
 		}
 	}
 	);
