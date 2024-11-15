@@ -2,11 +2,11 @@
 
 
 #include "Character/AuraCharacterBase.h"
+#include "AbilitySystemComponent.h"
 
-AAuraCharacterBase::AAuraCharacterBase()
-{
+AAuraCharacterBase::AAuraCharacterBase(){
 	PrimaryActorTick.bCanEverTick = false;
-	
+
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -16,12 +16,19 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const{
 	return AbilitySystemComponent;
 }
 
-void AAuraCharacterBase::BeginPlay()
-{
+void AAuraCharacterBase::BeginPlay(){
 	Super::BeginPlay();
-	
+
 }
 
-void AAuraCharacterBase::InitAbilityActorInfo()
-{
+void AAuraCharacterBase::InitAbilityActorInfo(){
+}
+
+//Powinno byæ od strony serwera, potem rozes³ane do klientów.
+void AAuraCharacterBase::InitializePrimaryAttributes() const{
+	check(IsValid(GetAbilitySystemComponent()));
+	check(DefaultPrimaryAttributes);
+	const auto ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	const auto SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(DefaultPrimaryAttributes, 1.f, ContextHandle);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
 }
