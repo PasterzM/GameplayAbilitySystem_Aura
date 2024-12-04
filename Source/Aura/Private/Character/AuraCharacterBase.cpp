@@ -23,12 +23,16 @@ void AAuraCharacterBase::BeginPlay(){
 
 void AAuraCharacterBase::InitAbilityActorInfo(){
 }
-
 //Powinno byæ od strony serwera, potem rozes³ane do klientów.
-void AAuraCharacterBase::InitializePrimaryAttributes() const{
+void AAuraCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> gameplayEffectClass, float level) const{
 	check(IsValid(GetAbilitySystemComponent()));
-	check(DefaultPrimaryAttributes);
+	check(gameplayEffectClass);
 	const auto ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
-	const auto SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(DefaultPrimaryAttributes, 1.f, ContextHandle);
+	const auto SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(gameplayEffectClass, level, ContextHandle);
 	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
+}
+
+void AAuraCharacterBase::InitializeDefaultAttributes() const{
+	ApplyEffectToSelf(DefaultPrimaryAttributes,1.f);
+	ApplyEffectToSelf(DefaultSecondaryAttributes,1.f);
 }
