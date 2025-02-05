@@ -14,6 +14,11 @@ GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
 GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+//typedef TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr FAttributeFuncPtr;
+template <class T>
+using TStaticFuncPtr = typename TBaseStaticDelegateInstance<
+	FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr;
+
 USTRUCT()
 struct FEffectProperties{
 	GENERATED_BODY()
@@ -41,22 +46,27 @@ struct FEffectProperties{
 };
 
 UCLASS()
-class AURA_API UAuraAttributeSet: public UAttributeSet{
+class AURA_API UAuraAttributeSet : public UAttributeSet{
 	GENERATED_BODY()
-	public:
+
+public:
 	UAuraAttributeSet();
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+	//mapa [tag,, atrybut]
+	//TMap<FGameplayTag, FGameplayAttribute(*)()> TagsToAttributes;
+	TMap<FGameplayTag, TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
 
 	/*
 	 * Primary Attributes
 	 */
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Strength, Category = "Primary Attributes")
 	FGameplayAttributeData Strength;
-	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Strength);	
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Strength);
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Inteligence, Category = "Primary Attributes")
 	FGameplayAttributeData Inteligence;
@@ -72,7 +82,7 @@ class AURA_API UAuraAttributeSet: public UAttributeSet{
 	/*
 	* Secondary Attributes
 	*/
-	
+
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Armor, Category = "Secondary Attributes")
 	FGameplayAttributeData Armor;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Armor);
@@ -119,19 +129,18 @@ class AURA_API UAuraAttributeSet: public UAttributeSet{
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Vital Attributes")
 	FGameplayAttributeData Health;
-	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Health);	//getter/setter dla pola, szybkie tworzenie
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Health); //getter/setter dla pola, szybkie tworzenie
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Mana, Category = "Vital Attributes")
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
-
 
 	//funkcja uruchamiana kiedy serwer odpowiada na zmiane wartosci atrybutu, ustawiona w ReplicatedUsing
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
 	UFUNCTION()
 	void OnRep_Mana(const FGameplayAttributeData& OldMana) const;
-	
+
 	///////////////////////////////////////////////
 	UFUNCTION()
 	void OnRep_Strength(const FGameplayAttributeData& OldStrength) const;
@@ -166,7 +175,6 @@ class AURA_API UAuraAttributeSet: public UAttributeSet{
 	UFUNCTION()
 	void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const;
 
-
-	private:
+private:
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& props) const;
 };
