@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Character/AuraCharacterBase.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 AAuraCharacterBase::AAuraCharacterBase(){
 	PrimaryActorTick.bCanEverTick = false;
@@ -18,12 +18,10 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const{
 
 void AAuraCharacterBase::BeginPlay(){
 	Super::BeginPlay();
-
 }
 
-void AAuraCharacterBase::InitAbilityActorInfo(){
-}
-//Powinno byæ od strony serwera, potem rozes³ane do klientów.
+void AAuraCharacterBase::InitAbilityActorInfo(){}
+//Powinno byï¿½ od strony serwera, potem rozesï¿½ane do klientï¿½w.
 void AAuraCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> gameplayEffectClass, float level) const{
 	check(IsValid(GetAbilitySystemComponent()));
 	check(gameplayEffectClass);
@@ -37,4 +35,11 @@ void AAuraCharacterBase::InitializeDefaultAttributes() const{
 	ApplyEffectToSelf(DefaultPrimaryAttributes, 1.f);
 	ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f);
 	ApplyEffectToSelf(DefaultVitalAttributes, 1.f);
+}
+
+void AAuraCharacterBase::AddCharacterAbilities(){
+UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
+	
+	if (!HasAuthority()) { return; }	//dodawaie tylko na serwerze
+	AuraASC->AddCharacterAbilities(StartupAbilities);
 }
