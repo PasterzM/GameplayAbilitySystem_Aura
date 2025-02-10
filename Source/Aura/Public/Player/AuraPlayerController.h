@@ -57,14 +57,16 @@ private:
 
 	UAuraAbilitySystemComponent* GetASC();
 
-	FVector CacheDestination = FVector::ZeroVector;
+	FVector CachedDestination = FVector::ZeroVector;
 	float FollowTime = 0.f;
 	float ShortPressThreshold = 0.5f;
 	bool bAutoRuning = false;
 	bool bTargeting = false;
 	
 	UPROPERTY(EditDefaultsOnly)
-	float AtoRunAcceptanceRadius = 50.f;
+	float AutoRunAcceptanceRadius = 50.f;
 
 	TObjectPtr<USplineComponent> Spline;
+
+	void AutoRun();
 };
