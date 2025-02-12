@@ -3,6 +3,7 @@
 #include "AbilitySystem/AbilityTasks/TargetDataUnderMouse.h"
 #include "AbilitySystemComponent.h"
 
+//TODO: Uwaga, obsługa multiplayer-a
 UTargetDataUnderMouse* UTargetDataUnderMouse::CreateTargetDataUnderMouse(UGameplayAbility* OwningAbility){
 	UTargetDataUnderMouse* MyObj = NewAbilityTask<UTargetDataUnderMouse>(OwningAbility);
 	return MyObj;
@@ -13,7 +14,17 @@ void UTargetDataUnderMouse::Activate(){
 	if (bIsLocallyControlled) {
 		SendMouseCursorData();
 	} else {
-		//TODO: Jestesmy na serwerze, wiec nasłuchujemy
+		//Jestesmy na serwerze, wiec nasłuchujemy
+		const FGameplayAbilitySpecHandle SpecHandle = GetAbilitySpecHandle();
+		const FPredictionKey ActivationPredictionKey = GetActivationPredictionKey();
+		AbilitySystemComponent.Get()->AbilityTargetDataSetDelegate(SpecHandle, ActivationPredictionKey).AddUObject(
+			this, &UTargetDataUnderMouse::OnTargetDataReplicatedCallback);
+
+		const bool bCalledDelegate = AbilitySystemComponent.Get()->CallReplicatedTargetDataDelegatesIfSet(
+			SpecHandle, ActivationPredictionKey);
+		if (!bCalledDelegate) {
+			SetWaitingOnRemotePlayerData(); //oczekuje na odpowiedz
+		}
 	}
 }
 
@@ -33,6 +44,14 @@ void UTargetDataUnderMouse::SendMouseCursorData(){
 	                                                      DataHandle, FGameplayTag(),
 	                                                      AbilitySystemComponent->ScopedPredictionKey);
 
+	if (ShouldBroadcastAbilityTaskDelegates()) {
+		ValidData.Broadcast(DataHandle);
+	}
+}
+
+void UTargetDataUnderMouse::OnTargetDataReplicatedCallback(const FGameplayAbilityTargetDataHandle& DataHandle,
+                                                           FGameplayTag ActivationTag){
+	AbilitySystemComponent->ConsumeClientReplicatedTargetData(GetAbilitySpecHandle(), GetActivationPredictionKey());
 	if (ShouldBroadcastAbilityTaskDelegates()) {
 		ValidData.Broadcast(DataHandle);
 	}
