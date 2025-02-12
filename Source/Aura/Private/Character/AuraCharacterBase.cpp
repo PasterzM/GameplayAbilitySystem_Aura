@@ -20,6 +20,11 @@ void AAuraCharacterBase::BeginPlay(){
 	Super::BeginPlay();
 }
 
+FVector AAuraCharacterBase::GetCombatSocketLocation(){
+	check(Weapon);
+	return Weapon->GetSocketLocation(WeaponTipSocketName);
+}
+
 void AAuraCharacterBase::InitAbilityActorInfo(){}
 //Powinno by� od strony serwera, potem rozes�ane do klient�w.
 void AAuraCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> gameplayEffectClass, float level) const{
@@ -38,8 +43,8 @@ void AAuraCharacterBase::InitializeDefaultAttributes() const{
 }
 
 void AAuraCharacterBase::AddCharacterAbilities(){
-UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
-	
-	if (!HasAuthority()) { return; }	//dodawaie tylko na serwerze
+	UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
+
+	if (!HasAuthority()) { return; } //dodawaie tylko na serwerze
 	AuraASC->AddCharacterAbilities(StartupAbilities);
 }

@@ -12,7 +12,7 @@
 #include "Input/AuraInputComponent.h"
 
 AAuraPlayerController::AAuraPlayerController(){
-	bReplicates = true; //je�li obiekt zmieni stan na serwwerze zostanie to wys�ane klientom.
+	bReplicates = true; //jeżli obiekt zmieni stan na serwwerze zostanie to wysłane klientom.
 	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
 }
 
@@ -88,26 +88,15 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue){
 }
 
 void AAuraPlayerController::CursorTrace(){
-	FHitResult CursorHit;
 	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
 	if (!CursorHit.bBlockingHit) return;
 
 	LastActor = ThisActor;
 	ThisActor = CursorHit.GetActor();
 
-	if (LastActor == nullptr) {
-		if (ThisActor != nullptr) {
-			ThisActor->HighlightActor();
-		} else {}
-	} else {
-		if (ThisActor == nullptr) {
-			LastActor->UnHighlightActor();
-		} else {
-			if (ThisActor != LastActor) {
-				LastActor->UnHighlightActor();
-				ThisActor->HighlightActor();
-			} else {}
-		}
+	if (ThisActor != LastActor) {
+		if (LastActor) { LastActor->UnHighlightActor(); }
+		if (ThisActor) { ThisActor->HighlightActor(); }
 	}
 }
 
@@ -131,16 +120,16 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag){
 			GetASC()->AbilityInputTagReleased(InputTag);
 		}
 	} else {
-		APawn* ControlledPawn = GetPawn();
+		const APawn* ControlledPawn = GetPawn();
 		if (FollowTime <= ShortPressThreshold && ControlledPawn) {
 			if (UNavigationPath* navPath = UNavigationSystemV1::FindPathToLocationSynchronously(
 				this, ControlledPawn->GetActorLocation(), CachedDestination)) {
 				Spline->ClearSplinePoints();
 				for (const FVector& PointLoc : navPath->PathPoints) {
 					Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
-					DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
+					//DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
 				}
-				CachedDestination = navPath->PathPoints[navPath->PathPoints.Num()-1];
+				CachedDestination = navPath->PathPoints[navPath->PathPoints.Num() - 1];
 				bAutoRuning = true;
 			}
 		}
@@ -162,9 +151,9 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag){
 		}
 	} else {
 		FollowTime += GetWorld()->GetDeltaSeconds();
-		FHitResult Hit;
-		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) {
-			CachedDestination = Hit.ImpactPoint;
+
+		if (CursorHit.bBlockingHit) {
+			CachedDestination = CursorHit.ImpactPoint;
 		}
 		if (APawn* ControlledPawn = GetPawn()) {
 			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();

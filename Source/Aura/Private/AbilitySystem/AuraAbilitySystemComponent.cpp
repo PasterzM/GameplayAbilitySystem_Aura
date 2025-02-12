@@ -6,7 +6,8 @@
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 
 void UAuraAbilitySystemComponent::AbilitytActorInfoSet(){
-	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::EffectApplied);
+	//odpalane na serwerze i kliencie, przy definicji _implementation w samej nazwie przedrostek Client!!
+	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::ClientEffectApplied);
 }
 
 void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities){
@@ -43,9 +44,8 @@ void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& In
 	}
 }
 
-void UAuraAbilitySystemComponent::EffectApplied(UAbilitySystemComponent* AbilitySystemComponent,
-                                                const FGameplayEffectSpec& GameplayEffectSpec,
-                                                FActiveGameplayEffectHandle ActiveGameplayEffectHandle){
+void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent,
+	const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle){
 	FGameplayTagContainer TagContainer;
 	GameplayEffectSpec.GetAllAssetTags(TagContainer);
 	EffectAssetTags.Broadcast(TagContainer);
