@@ -34,6 +34,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Input")
 	TObjectPtr<UInputAction> MoveAction;
+	UPROPERTY(EditAnywhere, Category="Input")
+	TObjectPtr<UInputAction> ShiftAction;
+
+	void ShiftPressed(){ bShiftKeyDown = true; };
+	void ShiftReleased(){ bShiftKeyDown = false; };
+	bool bShiftKeyDown = false;
 
 	void Move(const FInputActionValue& InputActionValue);
 
@@ -63,7 +69,7 @@ private:
 	float ShortPressThreshold = 0.5f;
 	bool bAutoRuning = false;
 	bool bTargeting = false;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	float AutoRunAcceptanceRadius = 50.f;
 
