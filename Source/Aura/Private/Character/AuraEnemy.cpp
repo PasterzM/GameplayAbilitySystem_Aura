@@ -4,6 +4,7 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "../Aura.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Components/WidgetComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
 
@@ -47,16 +48,13 @@ void AAuraEnemy::BeginPlay(){
 	}
 
 	if (const UAuraAttributeSet* AuraAS = Cast<UAuraAttributeSet>(AttributeSet)) {
-		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAS->GetHealthAttribute()).AddLambda(
-			[this,AuraAS](const FOnAttributeChangeData& Data) {
-				OnHealthChanged.Broadcast(Data.NewValue);
-				OnMaxHealthChanged.Broadcast(AuraAS->GetMaxHealth());
-
-			});
-		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAS->GetMaxHealthAttribute()).AddLambda(
-			[this](const FOnAttributeChangeData& Data) {
-				OnMaxHealthChanged.Broadcast(Data.NewValue);
-			});
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAS->GetHealthAttribute()).AddLambda([this,AuraAS](const FOnAttributeChangeData& Data) {
+			OnHealthChanged.Broadcast(Data.NewValue);
+			OnMaxHealthChanged.Broadcast(AuraAS->GetMaxHealth()); //problem z klientem, musiałem jeszcze dodać to bo maxHealth jest 0
+		});
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAS->GetMaxHealthAttribute()).AddLambda([this](const FOnAttributeChangeData& Data) {
+			OnMaxHealthChanged.Broadcast(Data.NewValue);
+		});
 
 		OnHealthChanged.Broadcast(AuraAS->GetHealth());
 		OnMaxHealthChanged.Broadcast(AuraAS->GetMaxHealth());
@@ -68,4 +66,8 @@ void AAuraEnemy::InitAbilityActorInfo(){
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->AbilitytActorInfoSet();
 
 	InitializeDefaultAttributes();
+}
+
+void AAuraEnemy::InitializeDefaultAttributes() const{
+	UAuraAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClass, Level, AbilitySystemComponent);
 }

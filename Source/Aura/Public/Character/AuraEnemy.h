@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Character/AuraCharacterBase.h"
 #include "Interaction/EnemyInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
@@ -19,7 +20,7 @@ class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface{
 
 public:
 	AAuraEnemy();
-	//emeny interface
+	//enemy interface
 	virtual void HighlightActor() override;
 	virtual void UnHighlightActor() override;
 	//end enemy interface
@@ -36,12 +37,14 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	//UPROPERTY(BlueprintReadOnly)
-	//bool bHighlighted = false;
 	virtual void InitAbilityActorInfo() override;
+	virtual void InitializeDefaultAttributes() const override;
 
 	UPROPERTY(EditAnywhere, BLueprintReadOnly, Category = "Character Class Defaults")
 	int32 Level = 1;
+
+	UPROPERTY(EditAnywhere, BLueprintReadOnly, Category = "Character Class Defaults")
+	ECharacterClass CharacterClass = ECharacterClass::Warrior;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> HealthBar;
