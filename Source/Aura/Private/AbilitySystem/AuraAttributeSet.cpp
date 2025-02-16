@@ -29,7 +29,7 @@ UAuraAttributeSet::UAuraAttributeSet(){
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitChance, GetCriticalHitChanceAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitDamage, GetCriticalHitDamageAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitResistance, GetCriticalHitResistanceAttribute);
-	
+
 	//stara wersja
 	//FAttributeSignature IntelligenceDelegate;
 	//IntelligenceDelegate.BindStatic(GetInteligenceAttribute);
@@ -116,6 +116,8 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute()) {
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
+		UE_LOG(LogTemp, Warning, TEXT("Change Health on %s, HEalth: %f"), *props.TargetAvatarActor->GetName(),
+		       GetHealth());
 	}
 
 	if (Data.EvaluatedData.Attribute == GetManaAttribute()) {
