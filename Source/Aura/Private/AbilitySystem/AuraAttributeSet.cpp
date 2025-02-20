@@ -8,6 +8,10 @@
 #include <GameFramework/Character.h>
 #include <AbilitySystemBlueprintLibrary.h>
 
+#include "Interaction/CombatInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "Player/AuraPlayerController.h"
+
 UAuraAttributeSet::UAuraAttributeSet(){
 	//UE_LOG(LogTemp, Warning, TEXT("UAuraAttributeSet::UAuraAttributeSet"));
 
@@ -87,8 +91,7 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 	props.EffectContextHandle = Data.EffectSpec.GetContext();
 	props.SourceASC = props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
 
-	if (IsValid(props.SourceASC) && props.SourceASC->AbilityActorInfo.IsValid() && props.SourceASC->AbilityActorInfo->
-		AvatarActor.IsValid()) {
+	if (IsValid(props.SourceASC) && props.SourceASC->AbilityActorInfo.IsValid() && props.SourceASC->AbilityActorInfo->AvatarActor.IsValid()) {
 		props.SourceAvatarActor = props.SourceASC->AbilityActorInfo->AvatarActor.Get();
 		props.SourceController = props.SourceASC->AbilityActorInfo->PlayerController.Get();
 		if (props.SourceController == nullptr && props.SourceAvatarActor != nullptr) {
@@ -97,7 +100,7 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 			}
 		}
 		if (props.SourceController) {
-			ACharacter* SourceCharacter = Cast<ACharacter>(props.SourceController->GetPawn());
+			props.SourceCharacter = Cast<ACharacter>(props.SourceController->GetPawn());
 		}
 	}
 
@@ -116,12 +119,40 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute()) {
 		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
-		UE_LOG(LogTemp, Warning, TEXT("Change Health on %s, HEalth: %f"), *props.TargetAvatarActor->GetName(),
-		       GetHealth());
+		UE_LOG(LogTemp, Warning, TEXT("Change Health on %s, HEalth: %f"), *props.TargetAvatarActor->GetName(), GetHealth());
 	}
 
 	if (Data.EvaluatedData.Attribute == GetManaAttribute()) {
 		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
+	}
+
+	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute()) {
+		const float LocalIncomingDamage = GetIncomingDamage();
+		SetIncomingDamage(0.f);
+		if (LocalIncomingDamage > 0.f) {
+			const float NewHealth = GetHealth() - LocalIncomingDamage;
+			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
+
+			const bool bFatal = NewHealth <= 0.f;
+			if (bFatal) {
+				if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(props.TargetAvatarActor)) {
+					CombatInterface->Die();
+				}
+			} else {
+				FGameplayTagContainer TagContainer;
+				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
+				props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+			}
+			ShowFloatingText(props, LocalIncomingDamage);
+		}
+	}
+}
+
+void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage) const{
+	if (Props.SourceCharacter != Props.TargetCharacter) {
+		if (auto* PC = Cast<AAuraPlayerController>(UGameplayStatics::GetPlayerController(Props.SourceCharacter, 0))) {
+			PC->ShowDamageNumber(Damage, Props.TargetCharacter);
+		}
 	}
 }
 

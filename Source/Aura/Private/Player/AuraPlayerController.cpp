@@ -9,7 +9,9 @@
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "GameFramework/Character.h"
 #include "Input/AuraInputComponent.h"
+#include "UI/Widget/DamageTextComponent.h"
 
 AAuraPlayerController::AAuraPlayerController(){
 	bReplicates = true; //jeżli obiekt zmieni stan na serwwerze zostanie to wysłane klientom.
@@ -22,13 +24,21 @@ void AAuraPlayerController::PlayerTick(float DeltaTime){
 	AutoRun();
 }
 
+void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter){
+	if (IsValid(TargetCharacter) && DamageTextComponentClass) {
+		auto* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		DamageText->RegisterComponent(); //TRzeba przy dynamicznym tworzeniu komponentow
+		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageText->SetDamageText(DamageAmount);
+	}
+}
+
 void AAuraPlayerController::AutoRun(){
 	if (!bAutoRuning) return;
 	if (APawn* ControlledPawn = GetPawn()) {
-		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(
-			ControlledPawn->GetActorLocation(), ESplineCoordinateSpace::World);
-		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(
-			LocationOnSpline, ESplineCoordinateSpace::World);
+		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(ControlledPawn->GetActorLocation(), ESplineCoordinateSpace::World);
+		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline, ESplineCoordinateSpace::World);
 
 		ControlledPawn->AddMovementInput(Direction);
 
@@ -42,12 +52,11 @@ void AAuraPlayerController::AutoRun(){
 void AAuraPlayerController::BeginPlay(){
 	Super::BeginPlay();
 
-	check(AuraContext); //co� jak assercja, nie pozwala dzia�a� programowi dalej
+	check(AuraContext); //coś jak assercja, nie pozwala dzia�a� programowi dalej
 
-	//GetSubsystem -> subsystemy s� singletonami
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-		GetLocalPlayer());
-	if (Subsystem) {
+	//GetSubsystem -> subsystemy są singletonami
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	if (Subsystem) { //działa tylko lokalnie, bez serwera. Ważne żeby srawdzić
 		Subsystem->AddMappingContext(AuraContext, 0);
 	}
 
@@ -72,8 +81,7 @@ void AAuraPlayerController::SetupInputComponent(){
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
 
-	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed,
-	                                       &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
+	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue){
@@ -126,8 +134,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag){
 	if (!bTargeting && !bShiftKeyDown) {
 		const APawn* ControlledPawn = GetPawn();
 		if (FollowTime <= ShortPressThreshold && ControlledPawn) {
-			if (UNavigationPath* navPath = UNavigationSystemV1::FindPathToLocationSynchronously(
-				this, ControlledPawn->GetActorLocation(), CachedDestination)) {
+			if (UNavigationPath* navPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination)) {
 				Spline->ClearSplinePoints();
 				for (const FVector& PointLoc : navPath->PathPoints) {
 					Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
@@ -168,8 +175,7 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag){
 
 UAuraAbilitySystemComponent* AAuraPlayerController::GetASC(){
 	if (AuraAbilitySystemComponent == nullptr) {
-		AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(
-			UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
+		AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
 	}
 	return AuraAbilitySystemComponent;
 }

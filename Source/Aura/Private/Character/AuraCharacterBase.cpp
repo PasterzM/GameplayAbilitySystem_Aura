@@ -25,6 +25,30 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const{
 	return AbilitySystemComponent;
 }
 
+UAnimMontage* AAuraCharacterBase::GetHitReactMontage_Implementation(){
+	return HitReactMontage;
+}
+
+void AAuraCharacterBase::Die(){
+	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true)); //upuszczenie broni, możemy tylko na serwerze
+	MulticastHandleDeath();
+}
+
+void AAuraCharacterBase::MulticastHandleDeath_Implementation(){
+	//musimy symulowac fizyke
+	Weapon->SetSimulatePhysics(true);
+	Weapon->SetEnableGravity(true);
+	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetEnableGravity(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Dissolve();
+}
+
 void AAuraCharacterBase::BeginPlay(){
 	Super::BeginPlay();
 }
@@ -35,6 +59,7 @@ FVector AAuraCharacterBase::GetCombatSocketLocation(){
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo(){}
+
 //Powinno by� od strony serwera, potem rozes�ane do klient�w.
 void AAuraCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> gameplayEffectClass, float level) const{
 	check(IsValid(GetAbilitySystemComponent()));
@@ -56,4 +81,18 @@ void AAuraCharacterBase::AddCharacterAbilities(){
 
 	if (!HasAuthority()) { return; } //dodawaie tylko na serwerze
 	AuraASC->AddCharacterAbilities(StartupAbilities);
+}
+
+void AAuraCharacterBase::Dissolve(){
+	if (IsValid(DissolveMaterialInstance)) {
+		UMaterialInstanceDynamic* DynamicMatInst = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicMatInst);
+		StartDissolveTimeline(DynamicMatInst);
+	}
+
+	if (IsValid(WeaponDissolveMaterialInstance)) {
+		UMaterialInstanceDynamic* DynamicMatInst = UMaterialInstanceDynamic::Create(WeaponDissolveMaterialInstance, this);
+		Weapon->SetMaterial(0, DynamicMatInst);
+		StartWeaponDissolveTimeline(DynamicMatInst);
+	}
 }

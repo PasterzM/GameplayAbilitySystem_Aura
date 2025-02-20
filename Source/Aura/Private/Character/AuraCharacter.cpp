@@ -48,6 +48,7 @@ void AAuraCharacter::InitAbilityActorInfo(){
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
 	AttributeSet = AuraPlayerState->GetAttributeSet();
 
+	//tylko kontroler danego klienta jest aktywny, resztanie (tylko własny kontroler można zdobyć).
 	if(auto* auraPlayerController = Cast<AAuraPlayerController>(GetController())){
 		if(auto* auraHUD = Cast<AAuraHUD>(auraPlayerController->GetHUD())){
 			auraHUD->InitOverlay(auraPlayerController, AuraPlayerState, AbilitySystemComponent, AttributeSet);

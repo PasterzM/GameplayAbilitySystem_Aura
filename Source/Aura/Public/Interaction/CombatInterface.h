@@ -23,6 +23,11 @@ public:
 	virtual int32 GetPlayerLevel();
 	virtual FVector GetCombatSocketLocation();
 
-	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable) //nie moze byc virtual przy BlueprintImplementableEvent
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable) //nie moze byc virtual przy BlueprintImplementableEvent
 	void UpdateFacingTarget(const FVector& Target);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UAnimMontage* GetHitReactMontage();
+
+	virtual void Die() = 0;
 };

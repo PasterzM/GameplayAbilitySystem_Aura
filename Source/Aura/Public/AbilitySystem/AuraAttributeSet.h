@@ -16,8 +16,7 @@ GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
 //typedef TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr FAttributeFuncPtr;
 template <class T>
-using TStaticFuncPtr = typename TBaseStaticDelegateInstance<
-	FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr;
+using TStaticFuncPtr = typename TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr;
 
 USTRUCT()
 struct FEffectProperties{
@@ -135,6 +134,12 @@ public:
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
 
+	//Meta atrybuty
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage);
+	//
+
 	//funkcja uruchamiana kiedy serwer odpowiada na zmiane wartosci atrybutu, ustawiona w ReplicatedUsing
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
@@ -177,4 +182,5 @@ public:
 
 private:
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& props) const;
+	void ShowFloatingText(const FEffectProperties& Props, float Damage) const;
 };
