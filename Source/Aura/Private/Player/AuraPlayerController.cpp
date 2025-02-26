@@ -24,13 +24,13 @@ void AAuraPlayerController::PlayerTick(float DeltaTime){
 	AutoRun();
 }
 
-void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter){
-	if (IsValid(TargetCharacter) && DamageTextComponentClass) {
+void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount, ACharacter* TargetCharacter, bool bBlockedHit, bool bCriticalHit){
+	if (IsValid(TargetCharacter) && DamageTextComponentClass && IsLocalController()) { //IsLocalController odpalane tylko na kliencie
 		auto* DamageText = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
 		DamageText->RegisterComponent(); //TRzeba przy dynamicznym tworzeniu komponentow
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		DamageText->SetDamageText(DamageAmount);
+		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
 	}
 }
 
@@ -140,8 +140,10 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag){
 					Spline->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
 					//DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
 				}
-				CachedDestination = navPath->PathPoints[navPath->PathPoints.Num() - 1];
-				bAutoRuning = true;
+				if (!navPath->PathPoints.IsEmpty()) {
+					CachedDestination = navPath->PathPoints[navPath->PathPoints.Num() - 1];
+					bAutoRuning = true;
+				}
 			}
 		}
 		FollowTime = 0.f;

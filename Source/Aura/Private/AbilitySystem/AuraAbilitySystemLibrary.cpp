@@ -2,6 +2,7 @@
 
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 
+#include "AuraAbilityTypes.h"
 #include "Game/AuraGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerState.h"
@@ -35,11 +36,9 @@ UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidge
 }
 
 void UAuraAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* worldContextObject, ECharacterClass CharacterClass, float Level, UAbilitySystemComponent* ASC){
-
-
+	AActor* AvatarActor = ASC->GetAvatarActor();
 	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(worldContextObject);
 	FCharacterClassDefaultInfo ClassDefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
-	AActor* AvatarActor = ASC->GetAvatarActor();
 
 	FGameplayEffectContextHandle PrimaryAttributesContextHandle = ASC->MakeEffectContext();
 	PrimaryAttributesContextHandle.AddSourceObject(AvatarActor);
@@ -67,7 +66,33 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* worldContext
 }
 
 UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObject* worldContextObject){
-	auto* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(worldContextObject));
+	 auto* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(worldContextObject)); //TODO: Gamemode są dostępne tylko na serwerze!! Wywali się na multiplayerze
 	if (!AuraGameMode) { return nullptr; }
 	return AuraGameMode->CharacterClassInfo;
+}
+
+bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& ContextHandle){
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(ContextHandle.Get())) {
+		return AuraEffectContext->IsBlockedHit();
+	}
+	return false;
+}
+
+bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& ContextHandle){
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(ContextHandle.Get())) {
+		return AuraEffectContext->IsCriticalHit();
+	}
+	return false;
+}
+
+void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& ContextHandle, bool isBlockedHit){
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(ContextHandle.Get())) {
+		AuraEffectContext->SetIsBlockedHit(isBlockedHit);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& ContextHandle, bool isCriticalHit){
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(ContextHandle.Get())) {
+		AuraEffectContext->SetIsCriticalHit(isCriticalHit);
+	}
 }

@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Actor/AuraEffectActor.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
@@ -14,8 +13,10 @@ AAuraEffectActor::AAuraEffectActor(){
 }
 
 void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass){
+	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;
+
 	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
-	if(TargetASC == nullptr) return;
+	if (TargetASC == nullptr) return;
 	check(GameplayEffectClass);
 	FGameplayEffectContextHandle EffectContextHandle = TargetASC->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(this);
@@ -23,49 +24,56 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 	const FActiveGameplayEffectHandle AcctiveEffectHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 
 	const bool iIsInfinite = EffectSpecHandle.Data.Get()->Def.Get()->DurationPolicy == EGameplayEffectDurationType::Infinite;
-	if(iIsInfinite && InfiniteEffectRemovalPolicy == EEffectRemovalPolicy::RemoveOnEndOverlap){
+	if (iIsInfinite && InfiniteEffectRemovalPolicy == EEffectRemovalPolicy::RemoveOnEndOverlap) {
 		ActiveEffectHandles.Add(AcctiveEffectHandle, TargetASC);
+	}
+	if (!iIsInfinite) {
+		Destroy();
 	}
 }
 
 void AAuraEffectActor::OnOverlap(AActor* targetActor){
-	if(InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap){
+	if (targetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;
+
+	if (InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap) {
 		ApplyEffectToTarget(targetActor, InstantGameplayEffectClass);
 	}
-	if(DurationEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap){
+	if (DurationEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap) {
 		ApplyEffectToTarget(targetActor, DurationGameplayEffectClass);
 	}
-	if(InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap){
+	if (InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap) {
 		ApplyEffectToTarget(targetActor, InstantGameplayEffectClass);
 	}
-	if(InfiniteEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap){
+	if (InfiniteEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap) {
 		ApplyEffectToTarget(targetActor, InfiniteGameplayEffectClass);
 	}
 }
 
 void AAuraEffectActor::OnEndOverlap(AActor* targetActor){
-	if(InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndEverlap){
+	if (targetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;
+	
+	if (InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndEverlap) {
 		ApplyEffectToTarget(targetActor, InstantGameplayEffectClass);
 	}
-	if(DurationEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndEverlap){
+	if (DurationEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndEverlap) {
 		ApplyEffectToTarget(targetActor, DurationGameplayEffectClass);
 	}
-	if(InfiniteEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndEverlap){
+	if (InfiniteEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndEverlap) {
 		ApplyEffectToTarget(targetActor, InfiniteGameplayEffectClass);
 	}
 
 	//ActiveEffectHandles
-	if(InfiniteEffectRemovalPolicy == EEffectRemovalPolicy::RemoveOnEndOverlap){
+	if (InfiniteEffectRemovalPolicy == EEffectRemovalPolicy::RemoveOnEndOverlap) {
 		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(targetActor);
-		if(!IsValid(TargetASC)){ return; }
+		if (!IsValid(TargetASC)) { return; }
 		TArray<FActiveGameplayEffectHandle> toRemove;
-		for(auto handlePair : ActiveEffectHandles){
-			if(handlePair.Value == TargetASC){
+		for (auto handlePair : ActiveEffectHandles) {
+			if (handlePair.Value == TargetASC) {
 				TargetASC->RemoveActiveGameplayEffect(handlePair.Key, 1);
 				toRemove.Add(handlePair.Key);
 			}
 		}
-		for(auto& key : toRemove){
+		for (auto& key : toRemove) {
 			ActiveEffectHandles.FindAndRemoveChecked(key);
 		}
 	}
