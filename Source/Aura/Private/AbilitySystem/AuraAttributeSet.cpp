@@ -154,7 +154,11 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage, bool bBlockedHit, bool bCriticalHit) const{
 	if (Props.SourceCharacter != Props.TargetCharacter) {
 		if (auto* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller)) {
-			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);	//odpalane na serwerze i kliencie ktory odpala
+			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit); //odpalane na serwerze i kliencie ktory odpala
+			return;
+		}
+		if (auto* PC = Cast<AAuraPlayerController>(Props.TargetCharacter->Controller)) {
+			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit); //odpalane na serwerze i kliencie ktory odpala
 		}
 	}
 }

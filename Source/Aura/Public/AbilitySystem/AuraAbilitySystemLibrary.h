@@ -26,7 +26,7 @@ public:
 	static void InitializeDefaultAttributes(const UObject* worldContextObject, ECharacterClass CharacterClass, float Level, UAbilitySystemComponent* ASC);
 
 	UFUNCTION(BlueprintCallable, Category= "AuraAbilitySystemLibrary|CharacterClassDefaults")
-	static void GiveStartupAbilities(const UObject* worldContextObject, UAbilitySystemComponent* ASC);
+	static void GiveStartupAbilities(const UObject* worldContextObject, UAbilitySystemComponent* ASC, ECharacterClass CharacterClass);
 
 	UFUNCTION(BlueprintCallable, Category= "AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* worldContextObject);
@@ -38,8 +38,14 @@ public:
 	static bool IsCriticalHit(const FGameplayEffectContextHandle& ContextHandle);
 
 	UFUNCTION(BlueprintCallable, Category= "AuraAbilitySystemLibrary|GameplayEffects")
-	static void SetIsBlockedHit(UPARAM(ref)FGameplayEffectContextHandle& ContextHandle,bool isBlockedHit);
+	static void SetIsBlockedHit(UPARAM(ref)FGameplayEffectContextHandle& ContextHandle, bool isBlockedHit);
 
 	UFUNCTION(BlueprintCallable, Category= "AuraAbilitySystemLibrary|GameplayEffects")
-	static void SetIsCriticalHit(UPARAM(ref)FGameplayEffectContextHandle& ContextHandle,bool isCriticalHit);
+	static void SetIsCriticalHit(UPARAM(ref)FGameplayEffectContextHandle& ContextHandle, bool isCriticalHit);
+
+	UFUNCTION(BlueprintCallable, Category= "AuraAbilitySystemLibrary|GameplayMechanics")
+	static void GetLivePlayersWithinRadius(const UObject* WorldContextObject, TArray<AActor*>& OutOverlapingActors, UPARAM(ref)TArray<AActor*>& ActorsToIgnore, float Radius, const FVector& SphereOrigin);
+
+	UFUNCTION(BlueprintPure, Category= "AuraAbilitySystemLibrary|GameplayMechanics")
+	static bool IsNotFriend(AActor* FirstActor, AActor* SecondActor);
 };

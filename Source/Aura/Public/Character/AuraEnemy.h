@@ -21,8 +21,8 @@ class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface{
 
 public:
 	AAuraEnemy();
-virtual void PossessedBy(AController* NewController) override;
-	
+	virtual void PossessedBy(AController* NewController) override;
+
 	//enemy interface
 	virtual void HighlightActor() override;
 	virtual void UnHighlightActor() override;
@@ -41,11 +41,17 @@ virtual void PossessedBy(AController* NewController) override;
 
 	UPROPERTY(BlueprintReadOnly, Category="Combat")
 	bool bHitReacting = false;
-	UPROPERTY(BlueprintReadOnly, Category="Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	float BaseWalkSpeed = 250.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	float LifeSpan = 5.f;
 
+	UPROPERTY(BlueprintReadWrite, Category="Combat")
+	TObjectPtr<AActor> CombatTarget;
+
+	//Wymagane przy BlueprintNativeEvent Końcowka _Implementation
+	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
+	virtual AActor* GetCombatTarget_Implementation() const override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitAbilityActorInfo() override;
