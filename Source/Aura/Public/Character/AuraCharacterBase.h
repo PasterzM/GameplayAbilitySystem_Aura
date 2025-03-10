@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "NiagaraSystem.h"
 #include "Abilities/GameplayAbility.h"
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
@@ -22,6 +23,7 @@ public:
 	AAuraCharacterBase();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UAttributeSet* GetAttributeSet() const{ return AttributeSet; }
+
 	//Combat interfaces
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die() override; //Smierć tylko na serwerze
@@ -29,12 +31,20 @@ public:
 	virtual bool IsDead_Implementation() const override;
 	virtual AActor* GetAvatar_Implementation() override;
 	virtual TArray<FTaggedMontage> GetAtackMontages_Implementation() override;
+	UNiagaraSystem* GetBloodEffect_Implementation() override;
+	virtual FTaggedMontage GetTaggedMontageByTag_Implementation(const FGameplayTag& MontageTag) override;
+	virtual int32 GetMinionCount_Implementation() override;
+	virtual void IncrementMinionCount_Implementation(int32 Amount) override;
 	//End Combat interfaces
+
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDeath(); //potrzebne do uruchomienia u wszystkich klientów
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TArray<FTaggedMontage> AttackMontages;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UNiagaraSystem* BloodEffect;
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,6 +60,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	FName RightHandSocketName;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FName TailSocketName;
 
 	bool bDead = false;
 
@@ -92,6 +105,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMaterialInstance> WeaponDissolveMaterialInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
+	USoundBase* DeathSound;
+
+	//minions
+
+	int32 MinionCount = 0;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Attributes")
